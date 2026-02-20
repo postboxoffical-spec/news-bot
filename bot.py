@@ -31,7 +31,7 @@ impact_keywords = [
     "order", "contract", "approval",
     "regulation", "policy",
     "upgrade", "downgrade",
-    "stake", "deal"
+    "stake", "guidance", "outlook", "expansion", "capex", "deal"
 ]
 
 # ====== SETUP ======
@@ -119,4 +119,5 @@ Score: {round(compound, 2)}
         daily_alerts.clear()
 
     time.sleep(900)  # 15 minutes
+
 run_bot()
