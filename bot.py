@@ -42,37 +42,34 @@ analyzer = SentimentIntensityAnalyzer()
 # ====== LOOP ======
 def run_bot():
     while True:
-    feed = feedparser.parse(rss_url)
+        feed = feedparser.parse(rss_url)
 
-    for entry in feed.entries:
-        if entry.link in sent_links:
-            continue
+        for entry in feed.entries:
+            if entry.link in sent_links:
+                continue
 
-        title_lower = entry.title.lower()
+            title_lower = entry.title.lower()
 
-        for sector, companies in sectors.items():
-            for company in companies:
+            for sector, companies in sectors.items():
+                for company in companies:
 
-                if company.lower() in title_lower:
+                    if company.lower() in title_lower:
 
-                    if any(keyword in title_lower for keyword in impact_keywords):
+                        if any(keyword in title_lower for keyword in impact_keywords):
 
-                        score = analyzer.polarity_scores(entry.title)
-                        compound = score['compound']
+                            score = analyzer.polarity_scores(entry.title)
+                            compound = score['compound']
 
-                        # Strong signals only
-                        if compound >= 0.3:
-                            sentiment = "🟢 Strong Bullish"
-                        elif compound <= -0.3:
-                            sentiment = "🔴 Strong Bearish"
-                        else:
-                            continue
+                            if compound >= 0.3:
+                                sentiment = "🟢 Strong Bullish"
+                            elif compound <= -0.3:
+                                sentiment = "🔴 Strong Bearish"
+                            else:
+                                continue
 
-                        # Store alert
-                        daily_alerts.append((sector, company, compound))
+                            daily_alerts.append((sector, company, compound))
 
-                        # Message
-                        message = f"""📢 POSITIONAL ALERT
+                            message = f"""📢 POSITIONAL ALERT
 
 Sector: {sector}
 Company: {company}
@@ -85,19 +82,16 @@ Score: {round(compound, 2)}
 {entry.link}
 """
 
-                        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-                        data = {
-                            "chat_id": CHAT_ID,
-                            "text": message
-                        }
+                            url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+                            data = {
+                                "chat_id": CHAT_ID,
+                                "text": message
+                            }
 
-                        requests.post(url, data=data)
-                        sent_links.add(entry.link)
+                            requests.post(url, data=data)
+                            sent_links.add(entry.link)
 
-    # ====== DAILY SUMMARY (9PM) ======
-    current_hour = time.localtime().tm_hour
-
-    if current_hour == 21 and daily_alerts:
+        time.sleep(900)
 
         bullish = sorted(daily_alerts, key=lambda x: x[2], reverse=True)
         bearish = sorted(daily_alerts, key=lambda x: x[2])
